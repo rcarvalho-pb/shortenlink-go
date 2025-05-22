@@ -6,6 +6,7 @@ import (
 )
 
 type BloomFilter struct {
+	id     int
 	bitset []bool
 	size   uint
 	k      int
@@ -49,6 +50,31 @@ func (bf *BloomFilter) Check(item string) bool {
 		}
 	}
 	return true
+}
+
+func (b *BloomFilter) BoolsToBytes() []byte {
+	length := (len(b.bitset) + 7) / 8
+	bytes := make([]byte, length)
+	for i, bit := range b.bitset {
+		if bit {
+			byteIndex := i / 8
+			bitOffSet := uint(i % 8)
+			bytes[byteIndex] |= 1 << bitOffSet
+		}
+	}
+	return bytes
+}
+
+func BytesToBool(bytes []byte, size int) []bool {
+	bits := make([]bool, size)
+	for i := range size {
+		byteIndex := i / 8
+		byteOffSet := uint(i % 8)
+		if bytes[byteIndex]&(1<<byteOffSet) != 0 {
+			bits[i] = true
+		}
+	}
+	return bits
 }
 
 func optimalBitSize(n int, p float64) int {
